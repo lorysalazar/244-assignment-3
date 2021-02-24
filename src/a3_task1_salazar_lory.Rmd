@@ -1,0 +1,21 @@
+---
+title: "Spatial data viz"
+author: "Lory Salazar"
+date: "2/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(sf)
+library(tmap)
+```
+
+```{r}
+# Read in both the oil spill and CA counties data
+
+
+```
+
