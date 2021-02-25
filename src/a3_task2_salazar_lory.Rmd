@@ -1,0 +1,63 @@
+---
+title: "Raster data"
+author: "Lory Salazar"
+date: "2/24/2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(raster)
+library(tidyverse)
+library(here)
+library(sf)
+library(fasterize)
+library(rnaturalearth)
+```
+
+```{r}
+# Read in the data
+ca_cetaceans <- list.files(path = here("data", "ca_cetaceans"), pattern = "*.tif", full.names = TRUE)
+
+ca_raster <- raster::stack(ca_cetaceans)
+```
+
+
+
+```{r}
+coastline110 <- ne_download(scale = 110, type = 'coastline', category = 'physical', returnclass = "sf")
+
+
+coastline <- ne_coastline(returnclass = "sf")
+```
+
+
+
+```{r}
+cetaceans_fun <- function(x, thresh = .6) {
+  y <- ifelse(x >= thresh, 1, NA)
+  return(y)
+}
+
+cetaceans <- calc(ca_raster, fun = cetaceans_fun)
+cetaceans_calc <- calc(cetaceans, fun = sum, na.rm = TRUE)
+
+cetaceans_df <- raster::rasterToPoints(cetaceans_calc) %>%
+  as.data.frame()
+
+
+ggplot() +
+  geom_raster(data = cetaceans_df, aes(x = x, y = y, fill = layer)) +
+  geom_sf(data = coastline) +
+  coord_sf(expand = 0)
+  
+  
+  
+# species_richness <- calc(cetacean_stack, fun = is_present), I used another calc() to find out how many spp in each cell species_richness1 <- calc(species_richness, fun = sum, na.rm = TRUE). I had to add the argument na.rm = TRUE because if I sum an object with NA, the results will be NA.  Then converted species_richness_1 to a df and was able to add this layer to ggplot(): geom_raster(data = species_richness1_df, aes(x=x,y=y, fill = layer))
+
+# then ggplot() + geom_raster(data = species_richness1_df, aes(x=x,y=y, fill = layer)) + geom_sf(data = coastline110) + etc etc
+
+```
+
