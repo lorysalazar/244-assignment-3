@@ -1,0 +1,88 @@
+---
+title: "Avengers Endgame text wrangling"
+author: "Lory Salazar"
+date: "2/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(here)
+```
+
+```{r}
+endgame_text <- pdf_text(here("endgame.pdf"))
+```
+
+```{r}
+# Creating a tidy dataframe
+endgame_tidy <- data.frame(endgame_text) %>% 
+  mutate(text_full = str_split(endgame_text, pattern = "\\n")) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_trim(text_full)) %>% 
+  slice(-(1:8))
+
+endgame_tokens <- endgame_tidy %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-endgame_text)
+
+# Remove all stopwords, then look at what the counts look like
+endgame_nonstop <- endgame_tokens %>% 
+  anti_join(stop_words)
+
+nonstop_counts <- endgame_nonstop %>% 
+  count(word)
+nonstop_counts
+```
+
+
+```{r}
+# Looking at the top most used words in the screenplay
+top_5 <- nonstop_counts %>% 
+  arrange(-n) %>% 
+  slice(1:5)
+
+# Because our word cloud will have the top 100 most used words, first create a subset of the top 100 words
+top_100 <- nonstop_counts %>% 
+  arrange(-n) %>% 
+  slice(1:100)
+
+
+```
+
+```{r}
+# Creating a word cloud of the top words used 
+
+ggplot(data = top_100, aes(label = word)) +
+  geom_text_wordcloud(aes(color = n, size = n), shape = "diamond") +
+  scale_size_area(max_size = 6) +
+  scale_colour_gradientn(colors = c("darkgreen","blue","purple")) +
+  theme_minimal()
+
+```
+
+## Sentiment analysis
+```{r}
+get_sentiments(lexicon = "afinn")
+
+# First looking at what the words look like in "afinn"
+afinn_pos <-get_sentiments("afinn") %>% 
+  filter(value > 2)
+
+endgame_afinn <- endgame_nonstop %>% 
+  inner_join(get_sentiments("afinn"))
+
+afinn_counts <- endgame_afinn %>% 
+  count(value)
+
+afinn_means <- endgame_afinn %>% 
+  summarise(mean_afinn = mean(value))
+
+```
+
+
