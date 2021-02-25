@@ -2,11 +2,13 @@
 title: "Avengers Endgame text wrangling"
 author: "Lory Salazar"
 date: "2/24/2021"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(tidytext)
 library(textdata)
@@ -55,18 +57,20 @@ top_100 <- nonstop_counts %>%
 
 ```
 
+## Word cloud of top most used words in Avengers: Endgame
 ```{r}
 # Creating a word cloud of the top words used 
 
 ggplot(data = top_100, aes(label = word)) +
   geom_text_wordcloud(aes(color = n, size = n), shape = "diamond") +
   scale_size_area(max_size = 6) +
-  scale_colour_gradientn(colors = c("darkgreen","blue","purple")) +
-  theme_minimal()
+  scale_colour_gradientn(colors = c("cyan3","blue","purple")) +
+  theme_minimal() +
+  labs(title = "Top 100 words in Avengers: Endgame")
 
 ```
 
-## Sentiment analysis
+## Using sentiment analysis to visualize the sentiments of Avengers: Endgame
 ```{r}
 get_sentiments(lexicon = "afinn")
 
@@ -80,9 +84,22 @@ endgame_afinn <- endgame_nonstop %>%
 afinn_counts <- endgame_afinn %>% 
   count(value)
 
-afinn_means <- endgame_afinn %>% 
-  summarise(mean_afinn = mean(value))
+# Also for "nrc"
+
+endgame_nrc <- endgame_nonstop %>% 
+  inner_join(get_sentiments("nrc"))
+
+nrc_counts <- endgame_nrc %>% 
+  count(sentiment)
+
+ggplot(data = nrc_counts, aes(x = n, y = sentiment)) +
+  geom_col() +
+  labs(title = "Sentiment analysis for Avengers: Endgame",
+       x = "Number of occurences", y = "Sentiment") +
+  theme_minimal()
 
 ```
 
-
+## Data citation
+Christopher Markus & Stephen McFeely
+Markus, Christopher, and McFeely, Stephan. Screenplay of *Avengers: Endgame*. Disney Studio Awards, https://disneystudiosawards.s3.amazonaws.com/avengers-endgame/Avengers_Endgame.pdf
