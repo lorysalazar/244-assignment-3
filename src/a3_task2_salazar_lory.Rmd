@@ -1,5 +1,5 @@
 ---
-title: "Raster data"
+title: "Probability of cetacean species occurence"
 author: "Lory Salazar"
 date: "2/24/2021"
 output: 
@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(raster)
 library(tidyverse)
 library(here)
@@ -26,11 +26,13 @@ ca_raster <- raster::stack(ca_cetaceans)
 
 
 
-```{r}
+```{r, results = "hide"}
+# download coastline
 coastline110 <- ne_download(scale = 110, type = 'coastline', category = 'physical', returnclass = "sf")
 
-
-coastline <- ne_coastline(returnclass = "sf")
+# download states
+states110 <- ne_download(scale = 110, type = 'states', category = 'cultural', returnclass = "sf") %>% 
+  filter(name == "California")
 ```
 
 
@@ -48,16 +50,31 @@ cetaceans_df <- raster::rasterToPoints(cetaceans_calc) %>%
   as.data.frame()
 
 
+# Plot to show the cetaceans for the coastline
 ggplot() +
   geom_raster(data = cetaceans_df, aes(x = x, y = y, fill = layer)) +
-  geom_sf(data = coastline) +
-  coord_sf(expand = 0)
+  geom_sf(data = coastline110) +
+  coord_sf(expand = 0, xlim = c(-125,-115), ylim = c(32,38)) +
+  scale_fill_gradientn(colors = c("gainsboro","cyan","blue","purple")) +
+  labs(x = " ", y = " ",
+       fill = "Species richness",
+       title = "Predicted cetacean richness off the California coastline")
   
-  
-  
-# species_richness <- calc(cetacean_stack, fun = is_present), I used another calc() to find out how many spp in each cell species_richness1 <- calc(species_richness, fun = sum, na.rm = TRUE). I had to add the argument na.rm = TRUE because if I sum an object with NA, the results will be NA.  Then converted species_richness_1 to a df and was able to add this layer to ggplot(): geom_raster(data = species_richness1_df, aes(x=x,y=y, fill = layer))
-
-# then ggplot() + geom_raster(data = species_richness1_df, aes(x=x,y=y, fill = layer)) + geom_sf(data = coastline110) + etc etc
-
 ```
 
+**Figure 1.** The map displays the Southern California Bight, the 426-mile stretch of coastline along the West Coast of the United States. Purple, blue, cyan, and gray colors indicate the species richness of 35 cetacean species along the coast, with purple indicated a that the species is highly present, and gray indicating absence of species. The presence of a species was determined using a probability threshold of 0.6, wherein a species is considered to be present if the probability is above 0.6.
+
+
+```{r}
+# Plot to show cetaceans for the state of CA
+ggplot() +
+  geom_raster(data = cetaceans_df, aes(x = x, y = y, fill = layer)) +
+  geom_sf(data = states110) +
+  coord_sf(expand = 0) +
+  scale_fill_gradientn(colors = c("gainsboro","cyan","blue","purple")) +
+  labs(fill = "Species richness",
+       title = "Cetacean richness off the California coastline") +
+  theme_bw()
+```
+
+**Figure 2.** The map displays the species richness of cetaceans as seen in **Figure 1**, but gives a look at the entirety of  California. Purple, blue, cyan, and gray colors indicate the species richness of 35 cetacean species along the coast. 
