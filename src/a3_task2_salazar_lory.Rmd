@@ -24,7 +24,9 @@ ca_cetaceans <- list.files(path = here("data", "ca_cetaceans"), pattern = "*.tif
 ca_raster <- raster::stack(ca_cetaceans)
 ```
 
+### Visualizing cetacean richness in California
 
+Using the California cetacean species data from AquaMaps, we look at the probability of occurrence of cetacean species in the California Bight. We set a probability threshold based off of the probability of occurrence, and use this to determine what the richness of cetacean species off the coast of California is.
 
 ```{r, results = "hide"}
 # download coastline
@@ -36,19 +38,20 @@ states110 <- ne_download(scale = 110, type = 'states', category = 'cultural', re
 ```
 
 
-
 ```{r}
+# Creating a function to set our probability threshold
 cetaceans_fun <- function(x, thresh = .6) {
   y <- ifelse(x >= thresh, 1, NA)
   return(y)
 }
 
+# Creating the calculation that we will use to create our dataframe
 cetaceans <- calc(ca_raster, fun = cetaceans_fun)
 cetaceans_calc <- calc(cetaceans, fun = sum, na.rm = TRUE)
 
+# Converting to a dataframe so that we can use ggplot
 cetaceans_df <- raster::rasterToPoints(cetaceans_calc) %>%
   as.data.frame()
-
 
 # Plot to show the cetaceans for the coastline
 ggplot() +
@@ -66,7 +69,7 @@ ggplot() +
 
 
 ```{r}
-# Plot to show cetaceans for the state of CA
+# Plot to show cetaceans for the state of CA; not necessary, but helped me to better understand where we were looking.
 ggplot() +
   geom_raster(data = cetaceans_df, aes(x = x, y = y, fill = layer)) +
   geom_sf(data = states110) +

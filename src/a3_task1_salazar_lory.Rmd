@@ -1,5 +1,5 @@
 ---
-title: "Spatial data viz"
+title: "Oil spills in CA counties"
 author: "Lory Salazar"
 date: "2/23/2021"
 output: 
@@ -30,6 +30,11 @@ oil_spills <- st_transform(oil_spills, 3857)
 
 ```
 
+### Exploring oil spills in California
+
+In this report, we explore oil spill events in different counties throughout California.
+
+To begin, using data from CA DFW Oil Spill Incident Tracking, we created an interactive map to get an overview of oil spill events in California.
 
 ```{r}
 # Creating an interactive map
@@ -40,6 +45,8 @@ tm_shape(ca_counties) +
   tm_shape(oil_spills) +
   tm_dots()
 ```
+
+Then, we looked at the counts of just inland oil spills (excluding marine spills), colorcoding by county to see the number of spills in each county in California.
 
 ```{r}
 # Making a graph for counts of inland oil spill events by county
