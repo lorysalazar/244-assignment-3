@@ -96,15 +96,15 @@ endgame_nrc <- endgame_nonstop %>%
 nrc_counts <- endgame_nrc %>% 
   count(sentiment)
 
-ggplot(data = nrc_counts, aes(x = n, y = sentiment)) +
+ggplot(data = nrc_counts, aes(x = reorder (sentiment, -n), y = n)) +
   geom_col() +
   labs(title = "Sentiment analysis for Avengers: Endgame",
-       x = "Number of occurences", y = "Sentiment") +
+       x = "Sentiment", y = "Number of occurences") +
   theme_minimal()
 
 ```
 
-**Figure 2.** The number of occurrences of words with different sentiments in Avengers: Endgame using the nrc lexicon.
+**Figure 2.** The number of occurrences of words with different sentiments in Avengers: Endgame using the nrc lexicon, from most frequently used sentiment to less frequently used sentiment.
 
 ### Data citation
 Christopher Markus & Stephen McFeely
